@@ -1,0 +1,65 @@
+---
+title: "UTS DATA MINING AND KNOWLEDGE MANAGEMENT"
+author: "221810318/Ghitha Nurfalah/3SD1"
+date: "10/27/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+if(!require(installr)) { install.packages("installr"); require(installr)}
+install.pandoc()
+```
+
+### Library yang dibutuhkan
+```{r}
+library(naivebayes)
+library(psych)
+library(caret)
+```
+Keterangan library :
+Library naivebayes digunakan untuk membuat model. 
+Library psych digunakan untuk melihat korelasi antar variabel. 
+Library caret digunakan untuk membuat confusion matriks dan melihar akurasi model.
+
+### Membaca data
+```{r}
+sonar <- read.csv("D:/UTS DMKM/data/sonar.all-data", header = FALSE)
+head(sonar)
+```
+
+### Konversi Data
+Mengubah tipe variabel menjadi tipe faktor
+```{r}
+for(i in names(sonar)){
+  sonar[,i]= as.factor(sonar[,i])
+}
+```
+
+### Split Data
+Memecah data menjadi data training (80% dari data awal) dan data test (20% dari data awal)
+```{r}
+set.seed(1234)
+sampel <- sample(2, nrow(sonar), replace = T, prob = c(0.8,0.2))
+training <- sonar[sampel==1, ]
+testing <- sonar[sampel==2, ]
+print(paste("Jumlah Data Training: ", nrow(training), "| Jumlah Data Testing: ", nrow(testing)))
+```
+
+## Membuat Model
+Gunakan atribut `laplace` untuk menghilangkan zero probability problem
+```{r}
+model <- naive_bayes(V1~.,data=training, laplace = 1)
+```
+Summary Model
+```{r}
+summary(model)
+```
+
+### Confusion Matrix
+```{r}
+prediksi <- predict(model, testing)
+confusionMatrix(table(prediksi,testing$V1))
+```
